@@ -1,19 +1,14 @@
 package com.example.colorapp.Repo
 
-import android.app.Application
 import android.util.Log
 import com.example.colorapp.Model.ColorFormat
 import com.example.colorapp.Model.PendingFormat
-import com.example.colorapp.Room.ColorDB
-import com.example.colorapp.Room.ColorDao
-import com.example.colorapp.Room.PendingDao
+import com.example.colorapp.Room.Color_Db.ColorDao
+import com.example.colorapp.Room.Pending_Db.PendingDao
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,10 +18,13 @@ class RepoImpl @Inject constructor(
     val firebaseFirestore: FirebaseFirestore,
 ) : Repo {
 
+//
+    override  suspend fun InsertDataintoColor(data: List<ColorFormat>) {
+        Log.d("INSERTINGCOLOR", "$data")
+    data.forEach{
 
-    override  fun InsertDataintoColor(data: ColorFormat) {
-        Log.d("DEBUGDATA", "$data")
-        colordb.insertColor(data)
+        colordb.insertColor(it)
+    }
     }
 
     override fun GetDataFromColor(): Flow<List<ColorFormat>> = colordb.getAllColor()
@@ -54,20 +52,27 @@ class RepoImpl @Inject constructor(
     }
 
     override suspend fun GetDataToCloud()  {
+      val colorList = mutableListOf<ColorFormat>()
         firebaseFirestore.collection("COLORS").get().addOnSuccessListener {
             for (document in it.documents) {
                 val data: ColorFormat? = document.toObject(ColorFormat::class.java)
-                try {
                     if (data != null) {
-
-                            Log.d("FIRECLOUD", "Data from firebase $data")
-                            InsertDataintoColor(data)
-
+//                            Log.d("FIRECLOUD", "Data from firebase $data")
+                            colorList.add(data)
                     }
-                } catch (e: Exception) {
-                    Log.d("EXCEPTIONFOUND", "${e.message}")
-                }
             }
+            Log.d("FIRECLOUD","$colorList")
+            CoroutineScope(Dispatchers.IO).launch {
+                InsertDataintoColor(colorList)
+            }
+
+        }
+        if (colorList.isNotEmpty()){
+
+
+        }
+        else{
+            Log.d("FIRECLOUD","empty list")
 
         }
     }

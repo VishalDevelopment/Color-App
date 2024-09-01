@@ -1,4 +1,4 @@
-package com.example.colorapp.Room
+package com.example.colorapp.Room.Color_Db
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ColorDao {
-    @Insert()
-    fun insertColor(data: ColorFormat)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertColor(data: ColorFormat)
     @Query("SELECT * FROM color_db")
     fun getAllColor(): Flow<List<ColorFormat>>
     @Query("SELECT COUNT(*) FROM color_db")

@@ -11,10 +11,3 @@ data class PendingFormat(
     val id: Int = 0
 )
 
-@Entity(tableName = "color_db")
-data class ColorFormat(
-    val colorCode: String="",
-    val date: String="",
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0
-)

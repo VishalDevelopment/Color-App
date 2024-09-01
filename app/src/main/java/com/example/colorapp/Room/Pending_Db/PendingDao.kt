@@ -1,10 +1,9 @@
-package com.example.colorapp.Room
+package com.example.colorapp.Room.Pending_Db
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.colorapp.Model.ColorFormat
 import com.example.colorapp.Model.PendingFormat
 import kotlinx.coroutines.flow.Flow
 

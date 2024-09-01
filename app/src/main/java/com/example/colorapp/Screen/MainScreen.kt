@@ -1,6 +1,7 @@
 package com.example.colorapp.Screen
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -23,21 +24,28 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.colorapp.Utilse.ColorVm
+import com.example.colorapp.Di.Network
+import com.example.colorapp.ViewModel.ColorVm
 import com.example.colorapp.Model.ColorFormat
 import com.example.colorapp.Model.PendingFormat
 import com.example.colorapp.Utilse.CustomDialog
 import com.example.colorapp.Utilse.DesignBox
 import com.example.colorapp.ui.theme.PurpleLite
 import com.example.colorapp.ui.theme.darkBlue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlin.concurrent.thread
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,11 +53,29 @@ fun MainScreen() {
     val viewmodel: ColorVm = hiltViewModel()
     val data = viewmodel.getAllColor().collectAsState(initial = emptyList())
     val count = viewmodel.getCount().collectAsState(initial = 0)
-    Log.d("DATA","$data.")
+
+    val IsInternet = remember {
+        mutableStateOf(false)
+    }
     val showDialog = remember {
         mutableStateOf(false)
     }
+    val context = LocalContext.current
+    if (Network.checkConnectivity(context)){
+        IsInternet.value = true
+        LaunchedEffect(key1 = Unit) {
+            CoroutineScope(Dispatchers.IO).launch {
 
+        viewmodel.GetDatatoCloud()
+        Log.i("NETWORKCONNECTIVITY","INTERNET AVAILABLE : thread : ${Thread.currentThread()}")
+            }
+        }
+        Log.i("DATA","$data")
+    }
+
+    else{
+        Log.i("NETWORKCONNECTIVITY","NOT AVAILABLE")
+    }
     if (showDialog.value==true){
         CustomDialog(value = "", setShowDialog = {
             showDialog.value = it
@@ -69,8 +95,10 @@ fun MainScreen() {
                 actions = {
                     ExtendedFloatingActionButton(
                         onClick = {
-                            if(pendingData!= emptyList<ColorFormat>()) {
-                                try {
+                            if(IsInternet.value == true   ) {
+                                Toast.makeText(context, "Sending Data to FireBase", Toast.LENGTH_SHORT).show()
+                                CoroutineScope(Dispatchers.IO).launch {
+
                                     pendingData.value.forEach {
                                         Log.d("SYNCING", "$it")
                                         viewmodel.SendPendingtoFireStore(
@@ -83,14 +111,13 @@ fun MainScreen() {
                                     }
                                     viewmodel.GetDatatoCloud()
                                     viewmodel.DeleteAllPending()
-                                }catch (e:Exception){
-                                    Log.d("EXCEPTIONMAIN","${e.message}")
+                                    //
                                 }
-                            }
-                            else{
-                                Log.d("SYNCING","Data doesn't exist")
 
+                                } else {
+                                Toast.makeText(context, " Internet Required", Toast.LENGTH_SHORT).show()
                             }
+
 
                         }, shape = RoundedCornerShape(100.dp), containerColor = PurpleLite,
                         elevation = FloatingActionButtonDefaults.elevation(0.dp),

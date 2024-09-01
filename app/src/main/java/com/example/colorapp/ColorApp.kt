@@ -1,4 +1,4 @@
-package com.example.colorapp.Utilse
+package com.example.colorapp
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp

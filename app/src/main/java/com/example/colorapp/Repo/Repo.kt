@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface Repo {
 
-      fun  InsertDataintoColor(data: ColorFormat)
+suspend   fun  InsertDataintoColor(data: List<ColorFormat>)
     fun GetDataFromColor():Flow<List<ColorFormat>>
 
 

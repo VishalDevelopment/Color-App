@@ -1,9 +1,9 @@
-package com.example.colorapp.Utilse
+package com.example.colorapp.Di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.colorapp.Room.ColorDB
-import com.example.colorapp.Room.PendingDb
+import com.example.colorapp.Room.Color_Db.ColorDB
+import com.example.colorapp.Room.Pending_Db.PendingRoomDb
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
@@ -24,7 +24,7 @@ object AppModule {
         app,
         ColorDB::class.java,
         "color_db"
-    ).build()
+    ).allowMainThreadQueries().build()
 
     @Singleton
     @Provides
@@ -37,13 +37,13 @@ object AppModule {
         @ApplicationContext app: Context
     ) = Room.databaseBuilder(
         app,
-        PendingDb::class.java,
+        PendingRoomDb::class.java,
         "PendingDatabase"
-    ).build()
+    ).allowMainThreadQueries().build()
 
     @Singleton
     @Provides
-    fun PendingDaoRef(db: PendingDb) = db.pendingDao()
+    fun PendingDaoRef(db: PendingRoomDb) = db.pendingDao()
 
     @Singleton
     @Provides
